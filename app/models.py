@@ -20,7 +20,7 @@ class User(SQLModel, table=True):
     lastname: str
     email: EmailStr = Field(sa_column=Column(String, unique=True, index=True))
     mobile_number: str
-    role: str = "user"  # user | admin | volunteer
+    role: str | None = Field(default="User")  # user | admin | volunteer
     hashed_password: str
 
     requests: List["Request"] = Relationship(
