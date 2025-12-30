@@ -73,7 +73,7 @@ const Donate = () => {
     };
 
     try {
-      const response = await axios.post("http://192.168.1.76:8000/resources", donationData, {
+      const response = await axios.post("https://crisis-care.onrender.com/resources", donationData, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

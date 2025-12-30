@@ -1,92 +1,152 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
 
     try {
-      const response = await fetch("http://192.168.1.76:8000/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      // ✅ REQUIRED by FastAPI OAuth2PasswordRequestForm
+      const formData = new URLSearchParams();
+      formData.append("username", email); // MUST be username
+      formData.append("password", password);
+
+      const response = await fetch(
+        "https://crisis-care.onrender.com/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: formData.toString(),
+        }
+      );
 
       const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.detail || "Login failed");
+        throw new Error(data.detail || "Invalid email or password");
       }
 
+      // ✅ Store token securely
       localStorage.setItem("accessToken", data.access_token);
-      localStorage.setItem("tokenExpiry", new Date().getTime() + 3600 * 1000);
+      localStorage.setItem(
+        "tokenExpiry",
+        Date.now() + 60 * 60 * 1000 // 1 hour
+      );
 
       navigate("/");
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-80">
-        <div className="flex justify-center mb-3">
-          <img src="https://i.postimg.cc/pTHRjFC4/Crisis-Carelogo.png" alt="CrisisCare Logo" className="w-44 h-auto" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center px-4">
+      <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl border border-slate-200 px-6 sm:px-10 py-9">
+
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <img
+            src="https://i.postimg.cc/pTHRjFC4/Crisis-Carelogo.png"
+            alt="CrisisCare Logo"
+            className="w-40"
+          />
         </div>
 
-        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-3">
-          Login to CrisisCare
-        </h2>
+        {/* Heading */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900">
+            Welcome back
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Sign in to continue to CrisisCare
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-lg font-medium text-gray-700">Email</label>
+        {/* Error */}
+        {error && (
+          <div className="mb-5 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Email Address
+            </label>
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm
+                         focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-lg font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 pr-10 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
-          {error && <div className="text-red-600 text-center mb-3">{error}</div>}
-
+          {/* Submit */}
           <button
             type="submit"
-            className="w-full py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition"
+            disabled={loading}
+            className="w-full rounded-lg bg-blue-600 py-3 text-white text-sm font-semibold
+                       hover:bg-blue-700 disabled:opacity-60
+                       focus:outline-none focus:ring-2 focus:ring-blue-600 transition"
           >
-            Login
+            {loading ? "Signing in..." : "Login"}
           </button>
         </form>
 
-        <p className="text-center text-gray-600 mt-4">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-blue-600 hover:underline">
-            Sign Up
+        {/* Footer */}
+        <p className="text-center text-sm text-slate-600 mt-7">
+          Don’t have an account?{" "}
+          <Link
+            to="/signup"
+            className="font-medium text-blue-600 hover:underline"
+          >
+            Create one
           </Link>
         </p>
       </div>

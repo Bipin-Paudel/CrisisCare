@@ -6,7 +6,6 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Check if user is logged in dynamically
   const isLoggedIn = !!localStorage.getItem("accessToken");
 
   const handleLogout = () => {
@@ -15,64 +14,160 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-blue-900 text-white shadow-lg">
-      <div className="container mx-auto flex justify-between items-center" style={{ height: "50px" }}>
-        {/* CrisisCare Text */}
-        <Link to="/" className="text-2xl font-extrabold tracking-wide ml-4">
-          CrisisCare
+    <header className="
+      sticky top-0 z-50
+      bg-gradient-to-r from-[#0f2a44] to-[#143a5f]
+      backdrop-blur
+      border-b border-white/10
+    ">
+      <div className="max-w-7xl mx-auto px-4 h-18 flex items-center justify-between">
+
+        {/* Logo */}
+        <Link
+          to="/"
+          className="
+            text-xl md:text-2xl font-extrabold tracking-wide
+            text-white transition-opacity duration-300
+            hover:opacity-90
+          "
+        >
+          Crisis<span className="text-yellow-400">Care</span>
         </Link>
 
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <button onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu">
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
-
-        {/* Desktop and Mobile Menu */}
-        <ul
-          className={`md:flex space-x-6 absolute md:relative top-16 md:top-0 left-0 w-full md:w-auto bg-blue-700 md:bg-transparent transition-all duration-300 ease-in-out ${
-            isOpen ? "block" : "hidden md:flex"
-          }`}
+        {/* Mobile Toggle */}
+        <button
+          className="
+            md:hidden p-2 rounded-lg
+            hover:bg-white/10
+            transition-colors duration-300
+          "
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label="Toggle menu"
         >
-          {[
-            { path: "", label: "Home" },
-            { path: "/about", label: "About" },
-            { path: "/services", label: "Services" },
-            { path: "/contact", label: "Contact" },
-          ].map((item) => (
-            <li key={item.path}>
-              <Link
-                to={item.path}
-                className="block px-6 py-3 text-lg hover:text-yellow-300 md:hover:text-yellow-500 transition-colors"
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
 
-          {/* Login / Logout Button */}
-          <li>
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-8">
+          <NavLink to="/">Home</NavLink>
+          <NavLink to="/about">About</NavLink>
+          <NavLink to="/services">Services</NavLink>
+          <NavLink to="/contact">Contact</NavLink>
+
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="
+                text-sm font-medium text-white/80
+                hover:text-yellow-400
+                transition-colors duration-300
+              "
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="
+                ml-2 px-5 py-2 rounded-full
+                bg-yellow-400 text-black
+                text-sm font-semibold
+                shadow-md
+                hover:bg-yellow-500
+                hover:scale-[1.04]
+                transition-all duration-300
+              "
+            >
+              Login
+            </Link>
+          )}
+        </nav>
+      </div>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="
+          md:hidden
+          bg-gradient-to-b from-[#143a5f] to-[#0f2a44]
+          border-t border-white/10
+          animate-in slide-in-from-top-2 duration-300
+        ">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-3">
+            <MobileNavLink to="/" onClick={() => setIsOpen(false)}>Home</MobileNavLink>
+            <MobileNavLink to="/about" onClick={() => setIsOpen(false)}>About</MobileNavLink>
+            <MobileNavLink to="/services" onClick={() => setIsOpen(false)}>Services</MobileNavLink>
+            <MobileNavLink to="/contact" onClick={() => setIsOpen(false)}>Contact</MobileNavLink>
+
             {isLoggedIn ? (
               <button
-                onClick={handleLogout}
-                className="block px-6 py-3 text-lg hover:text-red-400 md:hover:text-red-500 transition-colors"
+                onClick={() => {
+                  handleLogout();
+                  setIsOpen(false);
+                }}
+                className="
+                  text-left px-3 py-2 text-sm
+                  text-white/80 hover:text-yellow-400
+                  transition-colors duration-300
+                "
               >
                 Logout
               </button>
             ) : (
               <Link
                 to="/login"
-                className="block px-6 py-3 text-lg hover:text-yellow-300 md:hover:text-yellow-500 transition-colors"
+                onClick={() => setIsOpen(false)}
+                className="
+                  mt-2 px-4 py-2 text-center
+                  rounded-full bg-yellow-400 text-black
+                  font-semibold
+                  hover:bg-yellow-500
+                  transition-all duration-300
+                "
               >
                 Login
               </Link>
             )}
-          </li>
-        </ul>
-      </div>
-    </nav>
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
+
+/* ================= DESKTOP NAV LINK ================= */
+const NavLink = ({ to, children }) => (
+  <Link
+    to={to}
+    className="
+      relative text-sm font-medium
+      text-white/80 hover:text-white
+      transition-colors duration-300
+      after:absolute after:left-0 after:-bottom-1
+      after:h-[2px] after:w-0
+      after:bg-yellow-400
+      after:transition-all after:duration-300
+      hover:after:w-full
+    "
+  >
+    {children}
+  </Link>
+);
+
+/* ================= MOBILE NAV LINK ================= */
+const MobileNavLink = ({ to, children, onClick }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    className="
+      px-3 py-2 rounded-md
+      text-sm font-medium
+      text-white/90
+      hover:bg-white/10
+      transition-colors duration-300
+    "
+  >
+    {children}
+  </Link>
+);
 
 export default Navbar;
