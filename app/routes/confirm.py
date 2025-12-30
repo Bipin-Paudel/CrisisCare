@@ -48,16 +48,21 @@ async def send_confirmation_email(volunteer_id: int, request: Request, db: Sessi
 
     subject = "New Volunteer Request - Confirm Participation"
     body = f"""
-    Hello {volunteer.firstname},
-
-    You have been assigned to a new request titled "{request.title}".
-    Please click the link below to confirm your participation:
-
-    ✅ [Confirm Request]({confirmation_link})
-
-    If you are unable to help, you may ignore this email.
-
-    Best,
+    Hello {volunteer.firstname},\n
+    \n
+    You have been assigned to a new request titled "{request.title}".\n
+    Please click the link below to confirm your participation:\n
+    \n
+    Request details:\n
+        \t- Title: {request.title}
+        \t- Description: {request.description}
+        \t- Location: {request.location_lat}, {request.location_lon}\n
+    \n
+    ✅ [Confirm Request]({confirmation_link})\n
+    \n
+    If you are unable to help, you may ignore this email.\n
+    \n
+    Best,\n
     CrisisCare Team
     """
 
@@ -81,14 +86,13 @@ async def notify_victim(request_id: int, db: SessionLocal):
     # Notify the victim with the details
     subject = "Help is on the way!"
     body = f"""
-    Hello {victim.firstname},
-
-    A volunteer has confirmed your request: "{request.title}".
-    Volunteer details:
-    - Name: {volunteer.firstname}
-    - Contact: {volunteer.email}
-
-    Stay safe!
+    Hello {victim.firstname},\n
+    A volunteer has confirmed your request: "{request.title}".\n
+    Volunteer details:\n
+    - Name: {volunteer.firstname}\n
+    - Contact: {volunteer.email}\n
+    \n
+    Stay safe!\n
     CrisisCare Team
     """
     
@@ -98,25 +102,6 @@ async def notify_victim(request_id: int, db: SessionLocal):
     volunteers = db.exec(select(User).where(User.role == "volunteer")).all()  # Get all volunteers
     if not volunteers:
         raise HTTPException(status_code=404, detail="No volunteers found")
-    
-    # Notify each volunteer about the request
-    for volunteer in volunteers:
-        subject = f"New Volunteer Request: {request.title}"
-        body = f"""
-        Hello {volunteer.firstname},
-
-        A new request has been made titled "{request.title}".
-        If you're available, please consider assisting the victim.
-
-        Request details:
-        - Title: {request.title}
-        - Description: {request.description}
-        - Location: {request.location_lat}, {request.location_lon}
-
-        Stay safe!
-        CrisisCare Team
-        """
-        send_email(volunteer.email, subject, body)
 
 # Helper function to send emails using Mailjet API
 def send_email(to_email: str, subject: str, body: str):
