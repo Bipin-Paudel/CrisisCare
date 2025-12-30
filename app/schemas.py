@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel
 from pydantic import EmailStr
+from typing import Optional
 
 class UserBase(SQLModel):
     email: str
@@ -9,7 +10,7 @@ class UserCreate(SQLModel):
     lastname: str
     email: EmailStr
     mobile_number: str
-    role: str
+    role: Optional[str] = "user"
     password: str
 
 class UserLogin(SQLModel):

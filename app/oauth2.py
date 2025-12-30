@@ -1,42 +1,42 @@
+from jose import jwt, JWTError
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
+from . import models, database, schemas
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from . import models, schemas, database
 from .config import settings
 from sqlmodel import select
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl= "login")
+
 SECRET_KEY = settings.secret_key
-ALGORITHM = settings.algorithm
-ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
+ALGORTIHM = settings.algorithm
+EXPIRATION_TIME = settings.access_token_expire_minutes
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+def create_token(payload: dict):
+    expire =  datetime.utcnow() + timedelta(minutes= EXPIRATION_TIME)
+    payload.update({"exp":expire})
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORTIHM)
+    return token
 
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-def verify_token(token , credentials_exception):
-    
+def verify_token(token: str, credentials_error):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str | None = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-        token_data = schemas.TokenData(email=email)
-    except JWTError:
-        raise credentials_exception
-    return token_data
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORTIHM])
+        mail = payload.get("sub")
+        if mail == None:
+            raise credentials_error
 
-def get_current_user(db: database.SessionLocal ,token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    token_data = verify_token(token, credentials_exception)
-    user = db.exec(select(models.User).where(models.User.email == token_data.email)).first()
+        user_email =schemas.TokenData(email=mail)
+
+    except JWTError:
+        raise credentials_error
+    
+    return user_email
+
+def get_current_user(db: database.SessionLocal, token = Depends(oauth2_scheme)):
+    credentials_error = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credentials Could not be verified", headers={"WWW_Authenticate":"Bearer"})
+
+    payload = verify_token(token, credentials_error)
+
+    user = db.exec(select(models.User).where(models.User.email == payload.email)).first()
+
     return user

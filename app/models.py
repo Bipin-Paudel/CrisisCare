@@ -15,7 +15,7 @@ from typing import Optional, List
 class User(SQLModel, table=True):
     __tablename__ = "users"  # type: ignore
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     firstname: str
     lastname: str
     email: EmailStr = Field(sa_column=Column(String, unique=True, index=True))

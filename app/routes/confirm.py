@@ -30,6 +30,7 @@ async def confirm_request(request_id: int, volunteer_id: int, db: SessionLocal):
 
     request.is_confirmed = True
     request.volunteer_id = volunteer_id
+    db.add(request)
     db.commit()
     if request.id is not None:
         await notify_victim(request.id, db)
@@ -43,7 +44,7 @@ async def send_confirmation_email(volunteer_id: int, request: Request, db: Sessi
     if not volunteer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Volunteer not found")
 
-    confirmation_link = f"http://192.168.1.76:8000/confirm_request/{request.id}/{volunteer.id}"
+    confirmation_link = f"{settings.url}/confirm_request/{request.id}/{volunteer.id}"
 
     subject = "New Volunteer Request - Confirm Participation"
     body = f"""

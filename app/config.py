@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     mailjet_api_secret: str
     mail_from: str
 
+    url: str
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",

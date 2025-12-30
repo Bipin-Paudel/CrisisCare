@@ -41,20 +41,12 @@ async def add_request(request: schemas.RequestCreate, db: database.SessionLocal,
 
     # Get all volunteers in the database
     volunteers = db.exec(select(models.User).where(models.User.role == "volunteer")).all()
-
-    if not volunteers:
-        raise HTTPException(status_code=404, detail="No volunteers found")
-
     # Notify volunteers about the new request
-    try:
-
+    if volunteers:
         for volunteer in volunteers:
             if volunteer.id == None:
                 continue
             await confirm.send_confirmation_email(volunteer.id, db_request, db)
-    except Exception as a:
-        print(a)
-        raise HTTPException(status_code=500, detail="Error notifying volunteers")
 
     return db_request
 
@@ -107,7 +99,7 @@ def update_request_status(request_id: int, statuscon: str, db: database.SessionL
     request.status = statuscon
     db.add(request)
     db.commit()
-    return {"message": "Status updated", "new_status": status}
+    return {"message": "Status updated", "new_status": statuscon}
 
 @req_router.get("/requests", response_model=List[schemas.RequestResponse])
 def get_requests(db: database.SessionLocal, request_type: Optional[str] = None):
