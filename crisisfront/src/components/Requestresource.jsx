@@ -10,6 +10,9 @@ const Requestresource = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // ✅ User location state
+  const [userLocation, setUserLocation] = useState(null);
+
   useEffect(() => {
     Promise.all([
       fetch("https://crisis-care.onrender.com/requests").then(r => r.json()),
@@ -24,6 +27,24 @@ const Requestresource = () => {
         setError("Failed to load map data.");
         setLoading(false);
       });
+
+    // ✅ Get user's current location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation([
+            position.coords.latitude,
+            position.coords.longitude,
+          ]);
+        },
+        () => {
+          // Fallback if permission denied
+          setUserLocation([27.7172, 85.3240]); // Kathmandu
+        }
+      );
+    } else {
+      setUserLocation([27.7172, 85.3240]); // Kathmandu fallback
+    }
   }, []);
 
   const getMarkerIcon = (type) =>
@@ -56,7 +77,6 @@ const Requestresource = () => {
     <div className="bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
 
-        {/* ================= LAYOUT ================= */}
         <div className="flex flex-col lg:flex-row gap-6">
 
           {/* ================= SIDEBAR ================= */}
@@ -119,11 +139,20 @@ const Requestresource = () => {
           {/* ================= MAP ================= */}
           <section className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <MapContainer
-              center={[27.6833907, 84.4348551]}
+              center={userLocation || [27.7172, 85.3240]}
               zoom={13}
               className="h-[420px] lg:h-[600px] w-full"
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+              {/* ✅ User location marker */}
+              {userLocation && (
+                <Marker position={userLocation}>
+                  <Popup>
+                    <p className="text-sm font-semibold">📍 You are here</p>
+                  </Popup>
+                </Marker>
+              )}
 
               {requests.map(r => (
                 <Marker
