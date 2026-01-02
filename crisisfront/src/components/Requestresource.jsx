@@ -15,8 +15,8 @@ const Requestresource = () => {
 
   useEffect(() => {
     Promise.all([
-      fetch("https://crisis-care.onrender.com/requests").then(r => r.json()),
-      fetch("https://crisis-care.onrender.com/resources").then(r => r.json())
+      fetch("https://crisis-care.onrender.com/requests").then((r) => r.json()),
+      fetch("https://crisis-care.onrender.com/resources").then((r) => r.json()),
     ])
       .then(([reqs, dons]) => {
         setRequests(reqs);
@@ -39,11 +39,11 @@ const Requestresource = () => {
         },
         () => {
           // Fallback if permission denied
-          setUserLocation([27.7172, 85.3240]); // Kathmandu
+          setUserLocation([27.7172, 85.324]); // Kathmandu
         }
       );
     } else {
-      setUserLocation([27.7172, 85.3240]); // Kathmandu fallback
+      setUserLocation([27.7172, 85.324]); // Kathmandu fallback
     }
   }, []);
 
@@ -59,29 +59,20 @@ const Requestresource = () => {
 
   if (loading) {
     return (
-      <div className="py-20 text-center text-slate-600">
-        Loading map data…
-      </div>
+      <div className="py-20 text-center text-slate-600">Loading map data…</div>
     );
   }
 
   if (error) {
-    return (
-      <div className="py-20 text-center text-red-600">
-        {error}
-      </div>
-    );
+    return <div className="py-20 text-center text-red-600">{error}</div>;
   }
 
   return (
     <div className="bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
-
         <div className="flex flex-col lg:flex-row gap-6">
-
           {/* ================= SIDEBAR ================= */}
           <aside className="lg:w-[380px] bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-6">
-
             <h2 className="text-lg font-semibold text-slate-900 text-center">
               Requests & Resources
             </h2>
@@ -95,7 +86,7 @@ const Requestresource = () => {
                 {requests.length === 0 ? (
                   <p className="text-sm text-slate-500">No requests found.</p>
                 ) : (
-                  requests.map(r => (
+                  requests.map((r) => (
                     <div
                       key={r.id}
                       className="rounded-md border border-slate-200 p-3 text-sm bg-slate-50"
@@ -119,7 +110,7 @@ const Requestresource = () => {
                 {donors.length === 0 ? (
                   <p className="text-sm text-slate-500">No resources found.</p>
                 ) : (
-                  donors.map(d => (
+                  donors.map((d) => (
                     <div
                       key={d.id}
                       className="rounded-md border border-slate-200 p-3 text-sm bg-slate-50"
@@ -133,13 +124,12 @@ const Requestresource = () => {
                 )}
               </div>
             </div>
-
           </aside>
 
           {/* ================= MAP ================= */}
           <section className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <MapContainer
-              center={userLocation || [27.7172, 85.3240]}
+              center={userLocation || [27.7172, 85.324]}
               zoom={13}
               className="h-[420px] lg:h-[600px] w-full"
             >
@@ -154,7 +144,7 @@ const Requestresource = () => {
                 </Marker>
               )}
 
-              {requests.map(r => (
+              {requests.map((r) => (
                 <Marker
                   key={`r-${r.id}`}
                   position={[r.location_lat, r.location_lon]}
@@ -166,7 +156,9 @@ const Requestresource = () => {
                       <p>{r.description}</p>
                       <Link
                         to={`/donate/${r.id}`}
-                        className="inline-block mt-2 px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs hover:bg-blue-700"
+                        className="inline-block mt-2 px-3 py-1.5 bg-blue-700 text-white rounded-md text-xs font-semibold hover:bg-blue-800"
+
+
                       >
                         Donate Now
                       </Link>
@@ -175,7 +167,7 @@ const Requestresource = () => {
                 </Marker>
               ))}
 
-              {donors.map(d => (
+              {donors.map((d) => (
                 <Marker
                   key={`d-${d.id}`}
                   position={[d.location_lat, d.location_lon]}
@@ -188,7 +180,6 @@ const Requestresource = () => {
               ))}
             </MapContainer>
           </section>
-
         </div>
       </div>
     </div>
